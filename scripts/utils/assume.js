@@ -5,11 +5,11 @@ import msg from './msg.js';
  */
 const assume = (condition, ...message) => {
     if (!condition) {
-        message = msg.apply(null, message);
-        // console.log(message);
-        const err = new Error(message);
-        Error.captureStackTrace(err, assume);
-        throw err;
+        const object = {};
+        Error.captureStackTrace(object, assume);
+        console.log(object.stack); // Note: if we use console.error(), there's a race-condition with console.log()
+        console.log(msg.apply(null, message));
+        process.exit(1);
     }
 };
 

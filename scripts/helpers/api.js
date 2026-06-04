@@ -116,8 +116,8 @@ async function parseResponse(response) {
     try {
         return JSON.parse(text);
     } catch (err) {
-        console.error(err);
-        assume(false, 'Response was:', text.substring(0, 100).replaceAll(/\s/g, ' '));
+        const short = text.substring(0, 100).replaceAll(/\s/g, ' ');
+        assume(false, err.message, 'Response was: ' + short, 'Check CF_CLEARANCE!');
     }
 }
 
