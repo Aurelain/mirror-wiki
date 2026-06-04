@@ -76,7 +76,10 @@ function detectMethod(params) {
 function announceAction(method, params) {
     const parts = [method + ':', params.action];
     if (params.action === 'query') {
-        parts.push(params.type);
+        params.meta && parts.push(params.meta);
+        params.type && parts.push(params.type);
+        params.prop && parts.push(params.prop);
+        params.generator && parts.push(params.generator);
     }
     console.log(parts.join(' '));
 }
@@ -85,7 +88,7 @@ function announceAction(method, params) {
  *
  */
 function adaptParams(params) {
-    let adapted = {...params, format: 'json'};
+    let adapted = {...params, format: 'json', formatversion: 2};
     const {method} = adapted;
     delete adapted.method;
 
