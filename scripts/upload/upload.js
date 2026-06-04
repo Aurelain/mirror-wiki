@@ -1,4 +1,6 @@
-
+import {applySettings} from '../helpers/api.js';
+import getCsrfToken from '../helpers/getCsrfToken.js';
+import readSettings from '../helpers/readSettings.js';
 
 // =====================================================================================================================
 //  P U B L I C
@@ -7,8 +9,15 @@
  *
  */
 async function upload() {
-    console.log('mirror-wiki Upload:');
-    console.log(process.argv);
+    // Settings:
+    const settings = readSettings(process.argv[2]);
+    applySettings(settings);
+
+    // Csrf:
+    const csrf = await getCsrfToken(settings.USERNAME, settings.PASSWORD);
+    console.log('csrf:', csrf);
+
+    console.log('ok');
 }
 
 // =====================================================================================================================
