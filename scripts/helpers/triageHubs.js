@@ -1,11 +1,20 @@
 // =====================================================================================================================
 //  D E C L A R A T I O N S
 // =====================================================================================================================
-import {UPDATE_FILE, UPDATE_META} from './ACTIONS.js';
+import {
+    DELETE_META,
+    DELETE_FILE,
+    CREATE_META,
+    CREATE_FILE,
+    UPDATE_FILE,
+    CREATE_PAGE,
+    UPDATE_META,
+    UPDATE_PAGE,
+} from './ACTIONS.js';
 
 const HANDLERS = {
     // '111AAA': null, // A. Nirvana, everything matches
-    // '111AAB': null, // B. Local changes not yet commited
+    '111AAB': handleLocalChangesNotCommited,
     '111ABA': handleCorruptMeta,
     '111ABB': handleRemoteChanges,
     '111ABC': handleRemoteChangesWhileWorking,
@@ -14,10 +23,10 @@ const HANDLERS = {
     '101A0A': handlePrematureManualCreation,
     '101A0B': handlePrematureManualWrongCreation,
     '100A00': handleNewPage,
-    '0110AA': handleDeleted,
-    '0110AB': handlePageDeleted,
+    '0110AA': handlePageDeleted,
+    '0110AB': handlePageDeletedWhileWorking,
     '0100A0': handleOutdatedMeta,
-    // '00100A': null, // N. Uncommited new file
+    '00100A': handleUncommitedNewFile,
     // '000000': null, // O. Void, everything is empty
 };
 
@@ -161,6 +170,19 @@ function generate(titleC, titleM, titleL, dataC, dataM, dataL, entryC, entryM, e
 }
 
 /**
+ * B (111AAB): Local changes not yet commited
+ */
+function handleLocalChangesNotCommited(title, mergedItem) {
+    return [
+        {
+            title,
+            action: UPDATE_PAGE,
+            value: mergedItem.local.content,
+        },
+    ];
+}
+
+/**
  * C (111ABA): Corrupt meta
  */
 function handleCorruptMeta(title, mergedItem) {
@@ -192,67 +214,163 @@ function handleRemoteChanges(title, mergedItem) {
 }
 
 /**
- *
+ * E (111ABC): Remote changes happened while working
  */
 function handleRemoteChangesWhileWorking(title, mergedItem) {
-    return {};
+    return [
+        {
+            title,
+            action: UPDATE_META,
+            value: [mergedItem.cloud.sha1, mergedItem.cloud.content.length],
+        },
+        {
+            title,
+            action: UPDATE_FILE,
+            value: mergedItem.cloud.content,
+            guard: true,
+        },
+    ];
 }
 
 /**
- *
+ * F (110AA0): Accidental deletion of a local file
  */
 function handleAccidentalDeletion(title, mergedItem) {
-    return {};
+    return [
+        {
+            title,
+            action: CREATE_FILE,
+            value: mergedItem.cloud.content,
+        },
+    ];
 }
 
 /**
- *
+ * G (110AB0): Accidental deletion of a local file and cloud changed
  */
 function handleAccidentalDeletionAndCloudChanged(title, mergedItem) {
-    return {};
+    return [
+        {
+            title,
+            action: UPDATE_META,
+            value: [mergedItem.cloud.sha1, mergedItem.cloud.content.length],
+        },
+        {
+            title,
+            action: CREATE_FILE,
+            value: mergedItem.cloud.content,
+        },
+    ];
 }
 
 /**
- *
+ * H (101A0A): Premature manual creation of a local file
  */
 function handlePrematureManualCreation(title, mergedItem) {
-    return {};
+    return [
+        {
+            title,
+            action: CREATE_META,
+            value: [mergedItem.cloud.sha1, mergedItem.cloud.content.length],
+        },
+    ];
 }
 
 /**
- *
+ * I (101A0B): Premature manual wrong creation of a local file
  */
 function handlePrematureManualWrongCreation(title, mergedItem) {
-    return {};
+    return [
+        {
+            title,
+            action: CREATE_META,
+            value: [mergedItem.cloud.sha1, mergedItem.cloud.content.length],
+        },
+        {
+            title,
+            action: UPDATE_FILE,
+            value: mergedItem.cloud.content,
+            guard: true,
+        },
+    ];
 }
 
 /**
- *
+ * J (100A00): New page
  */
 function handleNewPage(title, mergedItem) {
-    return {};
+    return [
+        {
+            title,
+            action: CREATE_META,
+            value: [mergedItem.cloud.sha1, mergedItem.cloud.content.length],
+        },
+        {
+            title,
+            action: CREATE_FILE,
+            value: mergedItem.cloud.content,
+        },
+    ];
 }
 
 /**
- *
+ * K (0110AA): Page deleted
  */
-function handleDeleted(title, mergedItem) {
-    return {};
+function handlePageDeleted(title) {
+    return [
+        {
+            title,
+            action: DELETE_META,
+        },
+        {
+            title,
+            action: DELETE_FILE,
+        },
+    ];
 }
 
 /**
- *
+ * L (0110AB): Page deleted while working
  */
-function handlePageDeleted(title, mergedItem) {
-    return {};
+function handlePageDeletedWhileWorking(title) {
+    return [
+        {
+            title,
+            action: DELETE_META,
+        },
+        {
+            title,
+            action: DELETE_FILE,
+            guard: true,
+        },
+    ];
 }
 
 /**
- *
+ * M (0100A0): Outdated meta
  */
-function handleOutdatedMeta(title, mergedItem) {
-    return {};
+function handleOutdatedMeta(title) {
+    return [
+        {
+            title,
+            action: DELETE_META,
+        },
+    ];
 }
+
+/**
+ * N (00100A): Uncommited new file
+ */
+function handleUncommitedNewFile(title, mergedItem) {
+    return [
+        {
+            title,
+            action: CREATE_PAGE,
+            value: mergedItem.local.content,
+        },
+    ];
+}
+
 // =====================================================================================================================
 //  E X P O R T
 // =====================================================================================================================

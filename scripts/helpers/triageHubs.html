@@ -39,7 +39,13 @@
                 },
             },
             output: {
-                operations: [],
+                operations: [
+                    {
+                        "action": "UPDATE_PAGE",
+                        "title": "foo",
+                        "value": "bara"
+                    }
+                ],
                 tally: {
                     'B (111AAB): Local changes not yet commited': 1
                 }
@@ -60,7 +66,13 @@
                 },
             },
             output: {
-                operations: [],
+                operations: [
+                    {
+                        "action": "UPDATE_META",
+                        "title": "foo",
+                        "value": ['123', 3],
+                    }
+                ],
                 tally: {
                     'C (111ABA): Corrupt meta': 1
                 }
@@ -68,7 +80,313 @@
         },
         // -------------------------------------------------------------------------------------------------------------
         {
-            name: 'O. Void, everything is empty',
+            name: 'D (111ABB): Remote changes happened',
+            input: {
+                cloudHub: {
+                    'foo': {sha1: '1234', content: 'bara'}
+                },
+                metaHub: {
+                    'foo': {sha1: '123', length: 3}
+                },
+                localHub: {
+                    'foo': {sha1: '123', content: 'bar'},
+                },
+            },
+            output: {
+                operations: [
+                    {
+                        "action": "UPDATE_META",
+                        "title": "foo",
+                        "value": ['1234', 4],
+                    },
+                    {
+                        "action": "UPDATE_FILE",
+                        "title": "foo",
+                        "value": 'bara',
+                    }
+                ],
+                tally: {
+                    'D (111ABB): Remote changes happened': 1
+                }
+            },
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            name: 'E (111ABC): Remote changes happened while working',
+            input: {
+                cloudHub: {
+                    'foo': {sha1: '1234', content: 'bara'}
+                },
+                metaHub: {
+                    'foo': {sha1: '123', length: 3}
+                },
+                localHub: {
+                    'foo': {sha1: '123x', content: 'barx'},
+                },
+            },
+            output: {
+                operations: [
+                    {
+                        "action": "UPDATE_META",
+                        "title": "foo",
+                        "value": ['1234', 4],
+                    },
+                    {
+                        "action": "UPDATE_FILE",
+                        "title": "foo",
+                        "value": 'bara',
+                        guard: true,
+                    }
+                ],
+                tally: {
+                    'E (111ABC): Remote changes happened while working': 1
+                }
+            },
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            name: 'F (110AA0): Accidental deletion of a local file',
+            input: {
+                cloudHub: {
+                    'foo': {sha1: '123', content: 'bar'}
+                },
+                metaHub: {
+                    'foo': {sha1: '123', length: 3}
+                },
+                localHub: {},
+            },
+            output: {
+                operations: [
+                    {
+                        "action": "CREATE_FILE",
+                        "title": "foo",
+                        "value": 'bar',
+                    }
+                ],
+                tally: {
+                    'F (110AA0): Accidental deletion of a local file': 1
+                }
+            },
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            name: 'G (110AB0): Accidental deletion of a local file and cloud changed',
+            input: {
+                cloudHub: {
+                    'foo': {sha1: '1234', content: 'bara'}
+                },
+                metaHub: {
+                    'foo': {sha1: '123', length: 3}
+                },
+                localHub: {},
+            },
+            output: {
+                operations: [
+                    {
+                        "action": "UPDATE_META",
+                        "title": "foo",
+                        "value": ['1234', 4],
+                    },
+                    {
+                        "action": "CREATE_FILE",
+                        "title": "foo",
+                        "value": 'bara',
+                    }
+                ],
+                tally: {
+                    'G (110AB0): Accidental deletion of a local file and cloud changed': 1
+                }
+            },
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            name: 'H (101A0A): Premature manual creation of a local file',
+            input: {
+                cloudHub: {
+                    'foo': {sha1: '123', content: 'bar'}
+                },
+                metaHub: {},
+                localHub: {
+                    'foo': {sha1: '123', content: 'bar'},
+                },
+            },
+            output: {
+                operations: [
+                    {
+                        "action": "CREATE_META",
+                        "title": "foo",
+                        "value": ['123', 3],
+                    },
+                ],
+                tally: {
+                    'H (101A0A): Premature manual creation of a local file': 1
+                }
+            },
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            name: 'I (101A0B): Premature manual wrong creation of a local file',
+            input: {
+                cloudHub: {
+                    'foo': {sha1: '123', content: 'bar'}
+                },
+                metaHub: {},
+                localHub: {
+                    'foo': {sha1: '123x', content: 'barx'},
+                },
+            },
+            output: {
+                operations: [
+                    {
+                        "action": "CREATE_META",
+                        "title": "foo",
+                        "value": ['123', 3],
+                    },
+                    {
+                        "action": "UPDATE_FILE",
+                        "title": "foo",
+                        "value": 'bar',
+                        guard: true,
+                    },
+                ],
+                tally: {
+                    'I (101A0B): Premature manual wrong creation of a local file': 1
+                }
+            },
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            name: 'J (100A00): New page',
+            input: {
+                cloudHub: {
+                    'foo': {sha1: '123', content: 'bar'}
+                },
+                metaHub: {},
+                localHub: {},
+            },
+            output: {
+                operations: [
+                    {
+                        "action": "CREATE_META",
+                        "title": "foo",
+                        "value": ['123', 3],
+                    },
+                    {
+                        "action": "CREATE_FILE",
+                        "title": "foo",
+                        "value": 'bar',
+                    },
+                ],
+                tally: {
+                    'J (100A00): New page': 1
+                }
+            },
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            name: 'K (0110AA): Page deleted',
+            input: {
+                cloudHub: {},
+                metaHub: {
+                    'foo': {sha1: '123', length: 3}
+                },
+                localHub: {
+                    'foo': {sha1: '123', content: 'bar'},
+                },
+            },
+            output: {
+                operations: [
+                    {
+                        "action": "DELETE_META",
+                        "title": "foo",
+                    },
+                    {
+                        "action": "DELETE_FILE",
+                        "title": "foo",
+                    },
+                ],
+                tally: {
+                    'K (0110AA): Page deleted': 1
+                }
+            },
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            name: 'L (0110AB): Page deleted while working',
+            input: {
+                cloudHub: {},
+                metaHub: {
+                    'foo': {sha1: '123', length: 3}
+                },
+                localHub: {
+                    'foo': {sha1: '1234', content: 'barx'},
+                },
+            },
+            output: {
+                operations: [
+                    {
+                        "action": "DELETE_META",
+                        "title": "foo",
+                    },
+                    {
+                        "action": "DELETE_FILE",
+                        "title": "foo",
+                        guard: true,
+                    },
+                ],
+                tally: {
+                    'L (0110AB): Page deleted while working': 1
+                }
+            },
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            name: 'M (0100A0): Outdated meta',
+            input: {
+                cloudHub: {},
+                metaHub: {
+                    'foo': {sha1: '123', length: 3}
+                },
+                localHub: {},
+            },
+            output: {
+                operations: [
+                    {
+                        "action": "DELETE_META",
+                        "title": "foo",
+                    },
+                ],
+                tally: {
+                    'M (0100A0): Outdated meta': 1
+                }
+            },
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            name: 'N (00100A): Uncommited new file',
+            input: {
+                cloudHub: {},
+                metaHub: {},
+                localHub: {
+                    'foo': {sha1: '123', content: 'bar'},
+                },
+            },
+            output: {
+                operations: [
+                    {
+                        "action": "CREATE_PAGE",
+                        "title": "foo",
+                        value: 'bar'
+                    },
+                ],
+                tally: {
+                    'N (00100A): Uncommited new file': 1
+                }
+            },
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            name: 'O (000000): Void, everything is empty',
             input: {
                 cloudHub: {},
                 metaHub: {},
