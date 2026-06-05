@@ -9,6 +9,9 @@ import checkString from '../utils/checkString.js';
 import checkArray from '../utils/checkArray.js';
 import computeSha1 from '../utils/computeSha1.js';
 import convertPathToTitle from '../helpers/convertPathToTitle.js';
+import readMeta from '../helpers/readMeta.js';
+import triageHubs from '../helpers/triageHubs.js';
+import confirm from '../utils/confirm.js';
 
 // =====================================================================================================================
 //  D E C L A R A T I O N S
@@ -27,21 +30,30 @@ async function download() {
     const settings = readSettings(process.argv[2]);
     applySettings(settings);
 
-    // WikiMeta:
+    // Meta:
     const dirPath = settings.DIR_PATH;
-    const meta = getWikiMeta(dirPath);
-    let lastUpdate = BEGINNING_OF_TIME;
+    const meta = readMeta(dirPath);
+    const lastUpdate = meta.lastUpdate || BEGINNING_OF_TIME;
+    const isAllFresh = lastUpdate === BEGINNING_OF_TIME;
+    const metaHub = buildMetaHub(meta);
 
-    // lastUpdate = meta.lastUpdate;
-
-    // Changes:
+    // Cloud:
     const pages = await getChangesSince(lastUpdate);
-    const cloudHub = buildCloudHub(pages);
-    // console.log('cloudHub:', cloudHub);
+    const changesHub = buildChangesHub(pages);
+    const cloudHub = isAllFresh ? changesHub : {...metaHub, ...changesHub};
 
     // Local:
     const localHub = buildLocalHub(dirPath, dirPath.length + 1);
-    console.log('localHub:', localHub);
+
+    // Triage:
+    const triageResult = triageHubs(cloudHub, metaHub, localHub);
+    if (!triageResult) {
+        return console.log('Everything is empty...');
+    }
+    announceTally(triageResult);
+    const importantMessage = getGuardedMessage(triageResult.operations);
+    (await confirm(importantMessage)) || process.exit(0);
+    applyTriage(triageResult.operations);
 
     console.log('ok');
 }
@@ -52,18 +64,20 @@ async function download() {
 /**
  *
  */
-function getWikiMeta(dirPath) {
-    try {
-        return JSON.parse(fs.readFileSync(dirPath + '/.wiki-meta.json', 'utf8'));
-    } catch (e) {
-        return {};
+function buildMetaHub(meta) {
+    const hub = {};
+    for (const title in meta.pages) {
+        hub[title] = {
+            sha1: meta.pages,
+        };
     }
+    return hub;
 }
 
 /**
  *
  */
-function buildCloudHub(pages) {
+function buildChangesHub(pages) {
     const hub = {};
     for (const page of pages) {
         assume(checkPojo(page), page, 'page must be pojo!');
@@ -107,6 +121,43 @@ function buildLocalHub(dirPath, rootPathLength, hub = {}) {
     }
     return hub;
 }
+
+/**
+ *
+ */
+function announceTally({tally}) {
+    console.log('Triage result:');
+    let maxKeyLength = 0;
+    for (const key in tally) {
+        maxKeyLength = Math.max(maxKeyLength, key.length);
+    }
+    for (const key in tally) {
+        const heading = key + ':';
+        console.log(`    ${heading.padEnd(maxKeyLength + 1, ' ')} ${tally[key]}`);
+    }
+}
+
+/**
+ *
+ */
+function getGuardedMessage(list) {
+    const guardedItems = list.filter((item) => item.guard);
+    // const guardedItems = list;
+    if (!guardedItems.length) {
+        return '';
+    }
+    const lines = ['The following operations need confirmation:'];
+    for (const item of guardedItems) {
+        const {title, action, brief} = item;
+        lines.push(`    ${title}: ${action} (${brief})`);
+    }
+    return lines.join('\n');
+}
+
+/**
+ *
+ */
+function applyTriage({operations}) {}
 
 // =====================================================================================================================
 //  R U N

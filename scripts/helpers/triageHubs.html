@@ -5,13 +5,13 @@
     const TESTS = [
         // -------------------------------------------------------------------------------------------------------------
         {
-            name: 'A (111AAA): Nirvana, everything matches',
+            name: 'Nirvana, everything matches (111AAA)',
             input: {
                 cloudHub: {
                     'foo': {sha1: '123', content: 'bar'}
                 },
                 metaHub: {
-                    'foo': {sha1: '123', length: 3}
+                    'foo': {sha1: '123'}
                 },
                 localHub: {
                     'foo': {sha1: '123', content: 'bar'},
@@ -20,19 +20,19 @@
             output: {
                 operations: [],
                 tally: {
-                    'A (111AAA): Nirvana, everything matches': 1
+                    'Nirvana, everything matches (111AAA)': 1
                 }
             },
         },
         // -------------------------------------------------------------------------------------------------------------
         {
-            name: 'B (111AAB): Local changes not yet commited',
+            name: 'Local changes not yet commited (111AAB)',
             input: {
                 cloudHub: {
                     'foo': {sha1: '123', content: 'bar'}
                 },
                 metaHub: {
-                    'foo': {sha1: '123', length: 3}
+                    'foo': {sha1: '123'}
                 },
                 localHub: {
                     'foo': {sha1: '1234', content: 'bara'},
@@ -43,23 +43,24 @@
                     {
                         "action": "UPDATE_PAGE",
                         "title": "foo",
-                        "value": "bara"
+                        "value": "bara",
+                        brief: '+1',
                     }
                 ],
                 tally: {
-                    'B (111AAB): Local changes not yet commited': 1
+                    'Local changes not yet commited (111AAB)': 1
                 }
             },
         },
         // -------------------------------------------------------------------------------------------------------------
         {
-            name: 'C (111ABA): Corrupt meta',
+            name: 'Corrupt meta (111ABA)',
             input: {
                 cloudHub: {
                     'foo': {sha1: '123', content: 'bar'}
                 },
                 metaHub: {
-                    'foo': {sha1: '1234', length: 3}
+                    'foo': {sha1: '1234'}
                 },
                 localHub: {
                     'foo': {sha1: '123', content: 'bara'},
@@ -70,23 +71,23 @@
                     {
                         "action": "UPDATE_META",
                         "title": "foo",
-                        "value": ['123', 3],
+                        "value": '123',
                     }
                 ],
                 tally: {
-                    'C (111ABA): Corrupt meta': 1
+                    'Corrupt meta (111ABA)': 1
                 }
             },
         },
         // -------------------------------------------------------------------------------------------------------------
         {
-            name: 'D (111ABB): Remote changes happened',
+            name: 'Remote changes happened (111ABB)',
             input: {
                 cloudHub: {
                     'foo': {sha1: '1234', content: 'bara'}
                 },
                 metaHub: {
-                    'foo': {sha1: '123', length: 3}
+                    'foo': {sha1: '123'}
                 },
                 localHub: {
                     'foo': {sha1: '123', content: 'bar'},
@@ -97,28 +98,29 @@
                     {
                         "action": "UPDATE_META",
                         "title": "foo",
-                        "value": ['1234', 4],
+                        "value": '1234',
                     },
                     {
                         "action": "UPDATE_FILE",
                         "title": "foo",
                         "value": 'bara',
+                        brief: '+1',
                     }
                 ],
                 tally: {
-                    'D (111ABB): Remote changes happened': 1
+                    'Remote changes happened (111ABB)': 1
                 }
             },
         },
         // -------------------------------------------------------------------------------------------------------------
         {
-            name: 'E (111ABC): Remote changes happened while working',
+            name: 'Remote changes happened while working (111ABC)',
             input: {
                 cloudHub: {
                     'foo': {sha1: '1234', content: 'bara'}
                 },
                 metaHub: {
-                    'foo': {sha1: '123', length: 3}
+                    'foo': {sha1: '123'}
                 },
                 localHub: {
                     'foo': {sha1: '123x', content: 'barx'},
@@ -129,29 +131,30 @@
                     {
                         "action": "UPDATE_META",
                         "title": "foo",
-                        "value": ['1234', 4],
+                        "value": '1234',
                     },
                     {
                         "action": "UPDATE_FILE",
                         "title": "foo",
                         "value": 'bara',
+                        brief: '~0',
                         guard: true,
                     }
                 ],
                 tally: {
-                    'E (111ABC): Remote changes happened while working': 1
+                    'Remote changes happened while working (111ABC)': 1
                 }
             },
         },
         // -------------------------------------------------------------------------------------------------------------
         {
-            name: 'F (110AA0): Accidental deletion of a local file',
+            name: 'Accidental deletion of a local file (110AA0)',
             input: {
                 cloudHub: {
                     'foo': {sha1: '123', content: 'bar'}
                 },
                 metaHub: {
-                    'foo': {sha1: '123', length: 3}
+                    'foo': {sha1: '123'}
                 },
                 localHub: {},
             },
@@ -161,22 +164,23 @@
                         "action": "CREATE_FILE",
                         "title": "foo",
                         "value": 'bar',
+                        brief: '+3',
                     }
                 ],
                 tally: {
-                    'F (110AA0): Accidental deletion of a local file': 1
+                    'Accidental deletion of a local file (110AA0)': 1
                 }
             },
         },
         // -------------------------------------------------------------------------------------------------------------
         {
-            name: 'G (110AB0): Accidental deletion of a local file and cloud changed',
+            name: 'Accidental deletion of a local file and cloud changed (110AB0)',
             input: {
                 cloudHub: {
                     'foo': {sha1: '1234', content: 'bara'}
                 },
                 metaHub: {
-                    'foo': {sha1: '123', length: 3}
+                    'foo': {sha1: '123'}
                 },
                 localHub: {},
             },
@@ -185,22 +189,23 @@
                     {
                         "action": "UPDATE_META",
                         "title": "foo",
-                        "value": ['1234', 4],
+                        "value": '1234',
                     },
                     {
                         "action": "CREATE_FILE",
                         "title": "foo",
                         "value": 'bara',
+                        brief: '+4',
                     }
                 ],
                 tally: {
-                    'G (110AB0): Accidental deletion of a local file and cloud changed': 1
+                    'Accidental deletion of a local file and cloud changed (110AB0)': 1
                 }
             },
         },
         // -------------------------------------------------------------------------------------------------------------
         {
-            name: 'H (101A0A): Premature manual creation of a local file',
+            name: 'Premature manual creation of a local file (101A0A)',
             input: {
                 cloudHub: {
                     'foo': {sha1: '123', content: 'bar'}
@@ -215,17 +220,17 @@
                     {
                         "action": "CREATE_META",
                         "title": "foo",
-                        "value": ['123', 3],
+                        "value": '123',
                     },
                 ],
                 tally: {
-                    'H (101A0A): Premature manual creation of a local file': 1
+                    'Premature manual creation of a local file (101A0A)': 1
                 }
             },
         },
         // -------------------------------------------------------------------------------------------------------------
         {
-            name: 'I (101A0B): Premature manual wrong creation of a local file',
+            name: 'Premature manual wrong creation of a local file (101A0B)',
             input: {
                 cloudHub: {
                     'foo': {sha1: '123', content: 'bar'}
@@ -240,23 +245,24 @@
                     {
                         "action": "CREATE_META",
                         "title": "foo",
-                        "value": ['123', 3],
+                        "value": '123',
                     },
                     {
                         "action": "UPDATE_FILE",
                         "title": "foo",
                         "value": 'bar',
+                        brief: '-1',
                         guard: true,
                     },
                 ],
                 tally: {
-                    'I (101A0B): Premature manual wrong creation of a local file': 1
+                    'Premature manual wrong creation of a local file (101A0B)': 1
                 }
             },
         },
         // -------------------------------------------------------------------------------------------------------------
         {
-            name: 'J (100A00): New page',
+            name: 'New page (100A00)',
             input: {
                 cloudHub: {
                     'foo': {sha1: '123', content: 'bar'}
@@ -269,26 +275,27 @@
                     {
                         "action": "CREATE_META",
                         "title": "foo",
-                        "value": ['123', 3],
+                        "value": '123',
                     },
                     {
                         "action": "CREATE_FILE",
                         "title": "foo",
                         "value": 'bar',
+                        brief: '+3',
                     },
                 ],
                 tally: {
-                    'J (100A00): New page': 1
+                    'New page (100A00)': 1
                 }
             },
         },
         // -------------------------------------------------------------------------------------------------------------
         {
-            name: 'K (0110AA): Page deleted',
+            name: 'Page deleted (0110AA)',
             input: {
                 cloudHub: {},
                 metaHub: {
-                    'foo': {sha1: '123', length: 3}
+                    'foo': {sha1: '123'}
                 },
                 localHub: {
                     'foo': {sha1: '123', content: 'bar'},
@@ -303,20 +310,21 @@
                     {
                         "action": "DELETE_FILE",
                         "title": "foo",
+                        brief: '-3',
                     },
                 ],
                 tally: {
-                    'K (0110AA): Page deleted': 1
+                    'Page deleted (0110AA)': 1
                 }
             },
         },
         // -------------------------------------------------------------------------------------------------------------
         {
-            name: 'L (0110AB): Page deleted while working',
+            name: 'Page deleted while working (0110AB)',
             input: {
                 cloudHub: {},
                 metaHub: {
-                    'foo': {sha1: '123', length: 3}
+                    'foo': {sha1: '123'}
                 },
                 localHub: {
                     'foo': {sha1: '1234', content: 'barx'},
@@ -331,21 +339,22 @@
                     {
                         "action": "DELETE_FILE",
                         "title": "foo",
+                        brief: '-4',
                         guard: true,
                     },
                 ],
                 tally: {
-                    'L (0110AB): Page deleted while working': 1
+                    'Page deleted while working (0110AB)': 1
                 }
             },
         },
         // -------------------------------------------------------------------------------------------------------------
         {
-            name: 'M (0100A0): Outdated meta',
+            name: 'Outdated meta (0100A0)',
             input: {
                 cloudHub: {},
                 metaHub: {
-                    'foo': {sha1: '123', length: 3}
+                    'foo': {sha1: '123'}
                 },
                 localHub: {},
             },
@@ -357,13 +366,13 @@
                     },
                 ],
                 tally: {
-                    'M (0100A0): Outdated meta': 1
+                    'Outdated meta (0100A0)': 1
                 }
             },
         },
         // -------------------------------------------------------------------------------------------------------------
         {
-            name: 'N (00100A): Uncommited new file',
+            name: 'Uncommited new file (00100A)',
             input: {
                 cloudHub: {},
                 metaHub: {},
@@ -376,17 +385,18 @@
                     {
                         "action": "CREATE_PAGE",
                         "title": "foo",
-                        value: 'bar'
+                        value: 'bar',
+                        brief: '+3',
                     },
                 ],
                 tally: {
-                    'N (00100A): Uncommited new file': 1
+                    'Uncommited new file (00100A)': 1
                 }
             },
         },
         // -------------------------------------------------------------------------------------------------------------
         {
-            name: 'O (000000): Void, everything is empty',
+            name: 'Void, everything is empty (000000)',
             input: {
                 cloudHub: {},
                 metaHub: {},
