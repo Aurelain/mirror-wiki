@@ -1,0 +1,21 @@
+<script type='module'>
+    import triageHubs from './triageHubs.js';
+    import focus from '../utils/focus.js';
+
+    const TESTS = [
+        {
+            importance: 1,
+            input: {
+                cloudHub: [],
+                metaHub: [],
+                localHub: [],
+            },
+            output: [],
+        },
+    ];
+
+    await focus(triageHubs, TESTS, {
+        sendInputAsArguments: true,
+        fixN: true,
+    });
+</script>
