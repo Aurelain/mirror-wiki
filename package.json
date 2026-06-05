@@ -4,7 +4,8 @@
     "version": "0.0.1",
     "type": "module",
     "scripts": {
-        "targetAll": "node scripts/launch/launch download"
+        "targetAll": "node scripts/launch/launch download",
+        "refresh": "node scripts/refresh/refresh"
     },
     "dependencies": {
         "diff-match-patch-es": "^1.0.1",

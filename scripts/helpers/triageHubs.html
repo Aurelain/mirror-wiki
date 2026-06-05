@@ -3,14 +3,78 @@
     import focus from '../utils/focus.js';
 
     const TESTS = [
+        // -------------------------------------------------------------------------------------------------------------
         {
-            importance: 1,
+            name: 'A (111AAA): Nirvana, everything matches',
             input: {
-                cloudHub: [],
-                metaHub: [],
-                localHub: [],
+                cloudHub: {
+                    'foo': {sha1: '123', content: 'bar'}
+                },
+                metaHub: {
+                    'foo': {sha1: '123', length: 3}
+                },
+                localHub: {
+                    'foo': {sha1: '123', content: 'bar'},
+                },
             },
-            output: [],
+            output: {
+                operations: [],
+                tally: {
+                    'A (111AAA): Nirvana, everything matches': 1
+                }
+            },
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            name: 'B (111AAB): Local changes not yet commited',
+            input: {
+                cloudHub: {
+                    'foo': {sha1: '123', content: 'bar'}
+                },
+                metaHub: {
+                    'foo': {sha1: '123', length: 3}
+                },
+                localHub: {
+                    'foo': {sha1: '1234', content: 'bara'},
+                },
+            },
+            output: {
+                operations: [],
+                tally: {
+                    'B (111AAB): Local changes not yet commited': 1
+                }
+            },
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            name: 'C (111ABA): Corrupt meta',
+            input: {
+                cloudHub: {
+                    'foo': {sha1: '123', content: 'bar'}
+                },
+                metaHub: {
+                    'foo': {sha1: '1234', length: 3}
+                },
+                localHub: {
+                    'foo': {sha1: '123', content: 'bara'},
+                },
+            },
+            output: {
+                operations: [],
+                tally: {
+                    'C (111ABA): Corrupt meta': 1
+                }
+            },
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            name: 'O. Void, everything is empty',
+            input: {
+                cloudHub: {},
+                metaHub: {},
+                localHub: {},
+            },
+            output: null,
         },
     ];
 

@@ -163,10 +163,16 @@ const electTests = (tests) => {
     const normalTests = [];
     const importantTests = [];
     for (const item of tests) {
-        if (item.importance === 1) {
-            normalTests.push(item);
-        } else if (item.importance === 2) {
-            importantTests.push(item);
+        const {name} = item;
+        switch (name.charAt(0)) {
+            case '-':
+                // skip the test
+                break;
+            case '+':
+                importantTests.push(item);
+                break;
+            default:
+                normalTests.push(item);
         }
     }
     return importantTests.length ? importantTests : normalTests;
@@ -198,10 +204,10 @@ const prepareStyle = (config) => {
             html, body {
                 margin:0;
                 padding:0;
-                font-size:13px;
-                font-family: Consolas, monospace;
             }
             * {
+                font-family: "JetBrains Mono", Consolas, monospace;
+                font-size:13px;
                 box-sizing: border-box;
             }
             table {
