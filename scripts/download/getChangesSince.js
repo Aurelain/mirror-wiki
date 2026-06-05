@@ -49,8 +49,7 @@ async function getSomePages(startTimestamp, continuation) {
         // ---------------- continuation:
         ...continuation,
     });
-    const pages = response.query?.pages;
-    assume(Array.isArray(pages), 'Expecting a pages array!', response);
+    const pages = response.query?.pages || [];
     console.log(`Retrieved ${pages.length} pages.`);
 
     return {

@@ -12,12 +12,13 @@ import convertPathToTitle from '../helpers/convertPathToTitle.js';
 import readMeta from '../helpers/readMeta.js';
 import triageHubs from '../helpers/triageHubs.js';
 import confirm from '../utils/confirm.js';
+import applyTriage from '../helpers/applyTriage.js';
 
 // =====================================================================================================================
 //  D E C L A R A T I O N S
 // =====================================================================================================================
 // const BEGINNING_OF_TIME = '2000-01-01T00:00:00Z';
-const BEGINNING_OF_TIME = '2026-06-04T00:00:00Z';
+const BEGINNING_OF_TIME = '2026-06-01T00:00:00.123Z';
 
 // =====================================================================================================================
 //  P U B L I C
@@ -33,7 +34,8 @@ async function download() {
     // Meta:
     const dirPath = settings.DIR_PATH;
     const meta = readMeta(dirPath);
-    const lastUpdate = meta.lastUpdate || BEGINNING_OF_TIME;
+    // const lastUpdate = meta.lastUpdate || BEGINNING_OF_TIME;
+    const lastUpdate = BEGINNING_OF_TIME;
     const isAllFresh = lastUpdate === BEGINNING_OF_TIME;
     const metaHub = buildMetaHub(meta);
 
@@ -53,8 +55,9 @@ async function download() {
     announceTally(triageResult);
     const importantMessage = getGuardedMessage(triageResult.operations);
     (await confirm(importantMessage)) || process.exit(0);
-    applyTriage(triageResult.operations);
 
+    // Danger:
+    await applyTriage(triageResult.operations, metaHub, dirPath);
     console.log('ok');
 }
 
@@ -68,7 +71,7 @@ function buildMetaHub(meta) {
     const hub = {};
     for (const title in meta.pages) {
         hub[title] = {
-            sha1: meta.pages,
+            sha1: meta.pages[title],
         };
     }
     return hub;
@@ -85,7 +88,7 @@ function buildChangesHub(pages) {
         assume(checkString(title), title, 'title must be a filled string!');
         assume(checkArray(revisions), revisions, 'revisions must be array!');
         assume(revisions.length === 1, revisions, 'revisions must have only one item!');
-        const content = revisions[0]?.slots?.main?.content;
+        const content = revisions[0]?.['slots']?.main?.content;
         assume(typeof content === 'string', 'content must be a string!');
         hub[title] = {
             content,
@@ -107,7 +110,7 @@ function buildLocalHub(dirPath, rootPathLength, hub = {}) {
         const joinedPath = join(dirPath, file);
         const stat = fs.statSync(joinedPath);
         if (stat && stat.isDirectory()) {
-            buildLocalHub(joinedPath, hub);
+            buildLocalHub(joinedPath, rootPathLength, hub);
         } else {
             const content = fs.readFileSync(joinedPath, 'utf8');
             const title = convertPathToTitle(joinedPath.substring(rootPathLength));
@@ -153,11 +156,6 @@ function getGuardedMessage(list) {
     }
     return lines.join('\n');
 }
-
-/**
- *
- */
-function applyTriage({operations}) {}
 
 // =====================================================================================================================
 //  R U N
