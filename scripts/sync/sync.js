@@ -11,11 +11,14 @@ import confirm from '../utils/confirm.js';
 import applyTriage from '../helpers/applyTriage.js';
 import healTriage from './healTriage.js';
 import sortJson from '../utils/sortJson.js';
+import {CREATE_PAGE, UPDATE_PAGE} from '../helpers/ACTIONS.js';
+import writeMeta from '../helpers/writeMeta.js';
 
 // =====================================================================================================================
 //  D E C L A R A T I O N S
 // =====================================================================================================================
 const BEGINNING_OF_TIME = '2000-01-01T00:00:00Z';
+const UPLOAD = new Set([CREATE_PAGE, UPDATE_PAGE]);
 // const BEGINNING_OF_TIME = '2026-05-20T00:00:00Z';
 
 // =====================================================================================================================
@@ -28,7 +31,6 @@ async function sync() {
     // Settings:
     const settings = readSettings(process.argv[2]);
     applySettings(settings);
-    const isUpload = process.argv[3] === 'upload';
 
     // Meta:
     const dirPath = settings.DIR_PATH;
@@ -51,15 +53,20 @@ async function sync() {
     if (!triageResult) {
         return console.log('Everything is empty...');
     }
+    await healTriage(triageResult); // account for missing values
     announceTally(triageResult);
-    const importantMessage = getGuardedMessage(triageResult.operations);
-    (await confirm(importantMessage)) || process.exit(0);
-
-    // Fix triage to account for missing contents:
-    await healTriage(triageResult);
 
     // Danger:
-    await applyTriage(triageResult.operations, metaHub, dirPath, isUpload);
+    if (triageResult.operations.length) {
+        await confirmOperations(triageResult.operations);
+        await applyTriage(triageResult.operations, metaHub, dirPath);
+        if (process.argv[3] === 'upload') {
+            await confirmOperations(triageResult.operations, true);
+            const auth = {username: settings.USERNAME, password: settings.PASSWORD};
+            await applyTriage(triageResult.operations, metaHub, dirPath, auth);
+        }
+        writeMeta(dirPath, simplifyHub(metaHub));
+    }
 
     // Output:
     console.log('Done.');
@@ -158,24 +165,40 @@ function announceTally({tally}) {
 /**
  *
  */
-function getGuardedMessage(list) {
-    // const guardedItems = list.filter((item) => item.guard);
-    const guardedItems = list;
-    if (!guardedItems.length) {
-        return '';
-    }
-    const lines = ['The following operations need confirmation:'];
+async function confirmOperations(operations, isUpload) {
     const unique = {};
-    for (const item of guardedItems) {
+    for (const item of operations) {
         const {title, action} = item;
+        if ((isUpload && !UPLOAD.has(action)) || (!isUpload && UPLOAD.has(action))) {
+            continue;
+        }
         unique[title] = unique[title] || [];
         unique[title].push(action);
     }
+    if (!Object.keys(unique).length) {
+        return;
+    }
+
+    const lines = [(isUpload ? 'UPLOAD' : 'DOWNLOAD') + ' needs confirmation:'];
     const sorted = sortJson(unique);
     for (const key in sorted) {
         lines.push(`    ${key} 🡢 ${unique[key].join(', ')}`);
     }
-    return lines.join('\n');
+    const message = lines.join('\n');
+    if (!(await confirm(message))) {
+        process.exit(0);
+    }
+}
+
+/**
+ *
+ */
+function simplifyHub(metaHub) {
+    const hub = {};
+    for (const title in metaHub) {
+        hub[title] = metaHub[title].sha1;
+    }
+    return hub;
 }
 
 // =====================================================================================================================
