@@ -105,7 +105,7 @@ function mergeHubs(cloudHub, metaHub, localHub) {
         const titleM = entryM ? 1 : 0;
         const titleL = entryL ? 1 : 0;
         const dataC = 'A';
-        const dataM = titleM ? (entryC.sha1 === entryM.sha1 ? 'A' : 'B') : 0;
+        const dataM = titleM ? (compareHashes(entryC, entryM) ? 'A' : 'B') : 0;
         const dataL = titleL ? decideLocalCode(entryC, entryM, entryL) : 0;
         hub[title] = generate(titleC, titleM, titleL, dataC, dataM, dataL, entryC, entryM, entryL);
     }
@@ -118,7 +118,7 @@ function mergeHubs(cloudHub, metaHub, localHub) {
             const titleL = localHub[title] ? 1 : 0;
             const dataC = 0;
             const dataM = 'A';
-            const dataL = localHub[title] ? (entryM.sha1 === entryL.sha1 ? 'A' : 'B') : 0;
+            const dataL = localHub[title] ? (compareHashes(entryM, entryL) ? 'A' : 'B') : 0;
             hub[title] = generate(titleC, titleM, titleL, dataC, dataM, dataL, null, entryM, entryL);
         }
     }
@@ -136,13 +136,13 @@ function mergeHubs(cloudHub, metaHub, localHub) {
 function decideLocalCode(cloudEntry, metaEntry, localEntry) {
     if (metaEntry) {
         if (localEntry) {
-            if (cloudEntry.sha1 === metaEntry.sha1) {
-                return metaEntry.sha1 === localEntry.sha1 ? 'A' : 'B';
+            if (compareHashes(cloudEntry, metaEntry)) {
+                return compareHashes(metaEntry, localEntry) ? 'A' : 'B';
             } else {
-                if (cloudEntry.sha1 === localEntry.sha1) {
+                if (compareHashes(cloudEntry, localEntry)) {
                     return 'A';
                 } else {
-                    return metaEntry.sha1 === localEntry.sha1 ? 'B' : 'C';
+                    return compareHashes(metaEntry, localEntry) ? 'B' : 'C';
                 }
             }
         } else {
@@ -150,10 +150,27 @@ function decideLocalCode(cloudEntry, metaEntry, localEntry) {
         }
     } else {
         if (localEntry) {
-            return cloudEntry.sha1 === localEntry.sha1 ? 'A' : 'B';
+            return compareHashes(cloudEntry, localEntry) ? 'A' : 'B';
         } else {
             return 0;
         }
+    }
+}
+
+/**
+ *
+ */
+function compareHashes(entry1, entry2) {
+    const len1 = entry1.sha1.length;
+    const len2 = entry2.sha1.length;
+    if (len1 === len2) {
+        return entry1.sha1 === entry2.sha1;
+    } else {
+        // This dirty business is caused by the api not returning a reliable sha1, so we have to store
+        // BOTH the cloud and local hashes inside the meta hash.
+        const major = len1 > len2 ? entry1.sha1 : entry2.sha1;
+        const minor = len1 > len2 ? entry2.sha1 : entry1.sha1;
+        return major.startsWith(minor) || major.endsWith(minor);
     }
 }
 
@@ -219,14 +236,14 @@ function handleRemoteChanges(title, item) {
     return [
         {
             title,
-            action: UPDATE_META,
-            value: item.cloud.sha1,
-        },
-        {
-            title,
             action: UPDATE_FILE,
             value: item.cloud.content,
             brief: summarizeChanges(item.local.content, item.cloud.content),
+        },
+        {
+            title,
+            action: UPDATE_META,
+            value: item.cloud.sha1,
         },
     ];
 }
@@ -238,15 +255,15 @@ function handleRemoteChangesWhileWorking(title, item) {
     return [
         {
             title,
-            action: UPDATE_META,
-            value: item.cloud.sha1,
-        },
-        {
-            title,
             action: UPDATE_FILE,
             value: item.cloud.content,
             guard: true,
             brief: summarizeChanges(item.local.content, item.cloud.content),
+        },
+        {
+            title,
+            action: UPDATE_META,
+            value: item.cloud.sha1,
         },
     ];
 }
@@ -272,14 +289,14 @@ function handleAccidentalDeletionAndCloudChanged(title, item) {
     return [
         {
             title,
-            action: UPDATE_META,
-            value: item.cloud.sha1,
-        },
-        {
-            title,
             action: CREATE_FILE,
             value: item.cloud.content,
             brief: summarizeChanges('', item.cloud.content),
+        },
+        {
+            title,
+            action: UPDATE_META,
+            value: item.cloud.sha1,
         },
     ];
 }
@@ -304,15 +321,15 @@ function handlePrematureManualWrongCreation(title, item) {
     return [
         {
             title,
-            action: CREATE_META,
-            value: item.cloud.sha1,
-        },
-        {
-            title,
             action: UPDATE_FILE,
             value: item.cloud.content,
             guard: true,
             brief: summarizeChanges(item.local.content, item.cloud.content),
+        },
+        {
+            title,
+            action: CREATE_META,
+            value: item.cloud.sha1,
         },
     ];
 }
@@ -324,14 +341,14 @@ function handleNewPage(title, item) {
     return [
         {
             title,
-            action: CREATE_META,
-            value: item.cloud.sha1,
-        },
-        {
-            title,
             action: CREATE_FILE,
             value: item.cloud.content,
             brief: summarizeChanges('', item.cloud.content),
+        },
+        {
+            title,
+            action: CREATE_META,
+            value: item.cloud.sha1,
         },
     ];
 }
@@ -343,12 +360,12 @@ function handlePageDeleted(title, item) {
     return [
         {
             title,
-            action: DELETE_META,
+            action: DELETE_FILE,
+            brief: summarizeChanges(item.local.content, ''),
         },
         {
             title,
-            action: DELETE_FILE,
-            brief: summarizeChanges(item.local.content, ''),
+            action: DELETE_META,
         },
     ];
 }
@@ -360,13 +377,13 @@ function handlePageDeletedWhileWorking(title, item) {
     return [
         {
             title,
-            action: DELETE_META,
-        },
-        {
-            title,
             action: DELETE_FILE,
             guard: true,
             brief: summarizeChanges(item.local.content, ''),
+        },
+        {
+            title,
+            action: DELETE_META,
         },
     ];
 }

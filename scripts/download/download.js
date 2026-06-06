@@ -84,16 +84,27 @@ function buildChangesHub(pages) {
     const hub = {};
     for (const page of pages) {
         assume(checkPojo(page), page, 'page must be pojo!');
-        const {title, revisions} = page;
-        assume(checkString(title), title, 'title must be a filled string!');
-        assume(checkArray(revisions), revisions, 'revisions must be array!');
-        assume(revisions.length === 1, revisions, 'revisions must have only one item!');
+        const {title, revisions, ns, imageinfo} = page;
+        assume(checkString(title), page, 'title must be a filled string!');
+        assume(checkArray(revisions), page, 'revisions must be filled array!');
+        assume(revisions.length === 1, page, 'revisions must have only one item!');
         const content = revisions[0]?.['slots']?.main?.content;
-        assume(typeof content === 'string', 'content must be a string!');
+        assume(typeof content === 'string', page, 'content must be a string!');
         hub[title] = {
             content,
             sha1: computeSha1(content),
         };
+        if (ns === 6) {
+            // File:
+            const content = imageinfo?.[0]?.url;
+            assume(checkString(content), page, 'url must be filled string!');
+            const sha1 = imageinfo?.[0]?.sha1;
+            assume(checkString(sha1), page, 'sha1 must be filled string!');
+            hub[title + '.url'] = {
+                content,
+                sha1,
+            };
+        }
     }
     return hub;
 }
@@ -112,9 +123,16 @@ function buildLocalHub(dirPath, rootPathLength, hub = {}) {
         if (stat && stat.isDirectory()) {
             buildLocalHub(joinedPath, rootPathLength, hub);
         } else {
-            const content = fs.readFileSync(joinedPath, 'utf8');
             const title = convertPathToTitle(joinedPath.substring(rootPathLength));
-            if (title) {
+            if (joinedPath.includes('/File/') && !file.endsWith('.wiki')) {
+                // Binary
+                hub[title] = {
+                    content: joinedPath,
+                    sha1: computeSha1(fs.readFileSync(joinedPath)),
+                };
+            } else {
+                // Normal text file
+                const content = fs.readFileSync(joinedPath, 'utf8');
                 hub[title] = {
                     content,
                     sha1: computeSha1(content),
@@ -144,15 +162,16 @@ function announceTally({tally}) {
  *
  */
 function getGuardedMessage(list) {
-    const guardedItems = list.filter((item) => item.guard);
-    // const guardedItems = list;
+    // const guardedItems = list.filter((item) => item.guard);
+    const guardedItems = list;
     if (!guardedItems.length) {
         return '';
     }
     const lines = ['The following operations need confirmation:'];
     for (const item of guardedItems) {
         const {title, action, brief} = item;
-        lines.push(`    ${title}: ${action} (${brief})`);
+        const briefText = brief ? ` (${brief})` : '';
+        lines.push(`    ${title} 🡢 ${action}${briefText}`);
     }
     return lines.join('\n');
 }

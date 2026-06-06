@@ -20,10 +20,7 @@ async function ask(params) {
     // Headers:
     const options = {
         method,
-        headers: {
-            Cookie: cookies,
-            'User-Agent': settings.USER_AGENT,
-        },
+        headers: getHeaders(),
     };
 
     // Parameters:
@@ -37,6 +34,7 @@ async function ask(params) {
 
     // Actual request:
     const response = await fetch(url, options);
+    // console.log('url:', url);
 
     // Cookies:
     const cookiesList = response.headers.getSetCookie();
@@ -121,7 +119,17 @@ async function parseResponse(response) {
     }
 }
 
+/**
+ *
+ */
+function getHeaders() {
+    return {
+        Cookie: cookies,
+        'User-Agent': settings.USER_AGENT,
+    };
+}
+
 // =====================================================================================================================
 //  E X P O R T
 // =====================================================================================================================
-export {ask, applySettings};
+export {ask, applySettings, getHeaders};

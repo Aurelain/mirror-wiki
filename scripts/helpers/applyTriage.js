@@ -4,6 +4,7 @@ import writeMeta from './writeMeta.js';
 import assume from '../utils/assume.js';
 import convertTitleToPath from './convertTitleToPath.js';
 import writeFile from '../utils/writeFile.js';
+import downloadUrl from '../download/downloadUrl.js';
 
 // =====================================================================================================================
 //  P U B L I C
@@ -13,8 +14,9 @@ import writeFile from '../utils/writeFile.js';
  */
 async function applyTriage(operations, metaHub, dirPath) {
     const metaPages = simplifyHub(metaHub);
-    for (const operation of operations) {
-        const {title, action, value} = operation;
+    const {length} = operations;
+    for (let i = 0; i < length; i++) {
+        const {title, action, value} = operations[i];
         switch (action) {
             case CREATE_META: // fall
             case UPDATE_META:
@@ -31,7 +33,12 @@ async function applyTriage(operations, metaHub, dirPath) {
                     fs.unlinkSync(filePath);
                     assume(!fs.existsSync(filePath), filePath, 'Deletion failed!');
                 } else {
-                    writeFile(filePath, value);
+                    if (title.endsWith('.url')) {
+                        const sha1 = await downloadUrl(filePath, value);
+                        mutateNextOperation(operations[i + 1], sha1);
+                    } else {
+                        writeFile(filePath, value);
+                    }
                 }
                 break;
             default:
@@ -54,6 +61,18 @@ function simplifyHub(metaHub) {
         hub[title] = metaHub[title].sha1;
     }
     return hub;
+}
+
+/**
+ * Hack to store both the cloud and local hashes inside the meta, because the cloud sha is unreliable.
+ */
+function mutateNextOperation(operation, localFileSha1) {
+    if (operation) {
+        const {action} = operation;
+        if (action === CREATE_META || action === UPDATE_META) {
+            operation.value += localFileSha1;
+        }
+    }
 }
 
 // =====================================================================================================================

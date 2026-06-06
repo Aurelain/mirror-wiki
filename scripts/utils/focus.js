@@ -163,7 +163,7 @@ const electTests = (tests) => {
     const normalTests = [];
     const importantTests = [];
     for (const item of tests) {
-        const {name} = item;
+        const {name = ''} = item;
         switch (name.charAt(0)) {
             case '-':
                 // skip the test

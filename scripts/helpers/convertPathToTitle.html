@@ -1,0 +1,39 @@
+<script type='module'>
+    import convertPathToTitle from './convertPathToTitle.js';
+    import focus from '../utils/focus.js';
+
+    const TESTS = [
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            input: 'Main/Foo~Bar_Hello.wiki',
+            output: 'Foo/Bar Hello',
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            input: 'Template/Foo~Bar.wiki',
+            output: 'Template:Foo/Bar',
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            input: 'Module/Foo~styles.css',
+            output: 'Module:Foo/styles.css',
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            input: 'Main/Foo#Bar.wiki',
+            output: 'Foo:Bar',
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            input: 'File/Foo.png.wiki',
+            output: 'File:Foo.png',
+        },
+        // -------------------------------------------------------------------------------------------------------------
+        {
+            input: 'File/Foo.png',
+            output: 'File:Foo.png.url',
+        },
+    ];
+
+    await focus(convertPathToTitle, TESTS, {});
+</script>

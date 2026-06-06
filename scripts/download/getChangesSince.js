@@ -42,10 +42,12 @@ async function getSomePages(startTimestamp, continuation) {
         grcdir: 'newer',
         grctoponly: true, // only topmost
         grclimit: 50, // because we're requesting "content", we can't go above 50
+        grctitle: 'File:Skill_assault_2.png', // <-- during development, use this to only target a specific page
         // ---------------- prop:
-        prop: 'revisions',
+        prop: 'revisions|imageinfo',
         rvprop: 'content',
         rvslots: 'main',
+        iiprop: 'url|sha1',
         // ---------------- continuation:
         ...continuation,
     });

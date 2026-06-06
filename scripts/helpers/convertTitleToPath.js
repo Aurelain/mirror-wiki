@@ -24,29 +24,28 @@ const KNOWN_NAMESPACES = new Set([
     'Module',
     'Module talk',
 ]);
+const ALLOWED_EXTENSIONS = new Set(['css']);
 const ILLEGAL_CHARACTERS = new RegExp('~');
 
 // =====================================================================================================================
 //  P U B L I C
 // =====================================================================================================================
 /**
- * -------------------------------------------------------------
- * |  Title                      -> Path                        |
- * -------------------------------------------------------------
- * |  Foo/Bar Hello              -> Main/Foo~Bar_Hello.wiki     |
- * -------------------------------------------------------------
- * |  Template:Foo/Bar           -> Template/Foo~Bar.wiki       |
- * -------------------------------------------------------------
- * |  Modules:Foo/styles.css     -> Module/Foo~styles.css       |
- * -------------------------------------------------------------
+ *   Foo/Bar Hello              -> Main/Foo~Bar_Hello.wiki
+ *   Template:Foo/Bar           -> Template/Foo~Bar.wiki
+ *   Modules:Foo/styles.css     -> Module/Foo~styles.css
+ *   Foo:Bar                    -> Main/Foo#Bar.wiki
+ *   File:Foo.png               -> File/Foo.png.wiki
+ *   File:Foo.png.url           -> File/Foo.png
  */
 function convertTitleToPath(title) {
     assume(!title.match(ILLEGAL_CHARACTERS), title, 'Path contains an illegal character!');
     const {namespace, titleWithoutNamespace} = extractNamespace(title);
     let filePath = titleWithoutNamespace;
-    filePath = filePath.match(/\.\w+$/) ? filePath : filePath + '.wiki';
     filePath = filePath.replaceAll('/', '~');
     filePath = filePath.replaceAll(' ', '_');
+    filePath = filePath.replaceAll(':', '#');
+    filePath = adaptExtension(filePath);
     return namespace + '/' + filePath;
 }
 
@@ -58,10 +57,23 @@ function convertTitleToPath(title) {
  */
 function extractNamespace(title) {
     let [, namespace, titleWithoutNamespace] = title.match(/(.*?):(.*)/) || [null, '', title];
-    assume(!titleWithoutNamespace.includes(':'), title, 'Unexpected colon!');
+    if (!KNOWN_NAMESPACES.has(namespace)) {
+        namespace = '';
+        titleWithoutNamespace = title;
+    }
     namespace = namespace || 'Main';
-    assume(KNOWN_NAMESPACES.has(namespace), title, 'Unrecognized namespace!');
     return {namespace, titleWithoutNamespace};
+}
+
+/**
+ *
+ */
+function adaptExtension(title) {
+    const extension = (title.match(/\.([a-zA-Z]+)$/) || [null, ''])[1].toLowerCase();
+    if (extension === 'url') {
+        return title.replace(/\.url$/, '');
+    }
+    return ALLOWED_EXTENSIONS.has(extension) ? title : title + '.wiki';
 }
 
 // =====================================================================================================================

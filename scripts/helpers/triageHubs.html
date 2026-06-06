@@ -35,7 +35,7 @@
                     'foo': {sha1: '123'}
                 },
                 localHub: {
-                    'foo': {sha1: '1234', content: 'bara'},
+                    'foo': {sha1: '124', content: 'bara'},
                 },
             },
             output: {
@@ -60,7 +60,7 @@
                     'foo': {sha1: '123', content: 'bar'}
                 },
                 metaHub: {
-                    'foo': {sha1: '1234'}
+                    'foo': {sha1: '124'}
                 },
                 localHub: {
                     'foo': {sha1: '123', content: 'bara'},
@@ -84,7 +84,7 @@
             name: 'Remote changes happened (111ABB)',
             input: {
                 cloudHub: {
-                    'foo': {sha1: '1234', content: 'bara'}
+                    'foo': {sha1: '124', content: 'bara'}
                 },
                 metaHub: {
                     'foo': {sha1: '123'}
@@ -96,16 +96,16 @@
             output: {
                 operations: [
                     {
-                        "action": "UPDATE_META",
-                        "title": "foo",
-                        "value": '1234',
-                    },
-                    {
                         "action": "UPDATE_FILE",
                         "title": "foo",
                         "value": 'bara',
                         brief: '+1',
-                    }
+                    },
+                    {
+                        "action": "UPDATE_META",
+                        "title": "foo",
+                        "value": '124',
+                    },
                 ],
                 tally: {
                     'Remote changes happened (111ABB)': 1
@@ -117,29 +117,29 @@
             name: 'Remote changes happened while working (111ABC)',
             input: {
                 cloudHub: {
-                    'foo': {sha1: '1234', content: 'bara'}
+                    'foo': {sha1: '125', content: 'bara'}
                 },
                 metaHub: {
                     'foo': {sha1: '123'}
                 },
                 localHub: {
-                    'foo': {sha1: '123x', content: 'barx'},
+                    'foo': {sha1: '124', content: 'barx'},
                 },
             },
             output: {
                 operations: [
-                    {
-                        "action": "UPDATE_META",
-                        "title": "foo",
-                        "value": '1234',
-                    },
                     {
                         "action": "UPDATE_FILE",
                         "title": "foo",
                         "value": 'bara',
                         brief: '~0',
                         guard: true,
-                    }
+                    },
+                    {
+                        "action": "UPDATE_META",
+                        "title": "foo",
+                        "value": '125',
+                    },
                 ],
                 tally: {
                     'Remote changes happened while working (111ABC)': 1
@@ -177,7 +177,7 @@
             name: 'Accidental deletion of a local file and cloud changed (110AB0)',
             input: {
                 cloudHub: {
-                    'foo': {sha1: '1234', content: 'bara'}
+                    'foo': {sha1: '124', content: 'bara'}
                 },
                 metaHub: {
                     'foo': {sha1: '123'}
@@ -187,16 +187,16 @@
             output: {
                 operations: [
                     {
-                        "action": "UPDATE_META",
-                        "title": "foo",
-                        "value": '1234',
-                    },
-                    {
                         "action": "CREATE_FILE",
                         "title": "foo",
                         "value": 'bara',
                         brief: '+4',
-                    }
+                    },
+                    {
+                        "action": "UPDATE_META",
+                        "title": "foo",
+                        "value": '124',
+                    },
                 ],
                 tally: {
                     'Accidental deletion of a local file and cloud changed (110AB0)': 1
@@ -237,22 +237,22 @@
                 },
                 metaHub: {},
                 localHub: {
-                    'foo': {sha1: '123x', content: 'barx'},
+                    'foo': {sha1: '124', content: 'barx'},
                 },
             },
             output: {
                 operations: [
-                    {
-                        "action": "CREATE_META",
-                        "title": "foo",
-                        "value": '123',
-                    },
                     {
                         "action": "UPDATE_FILE",
                         "title": "foo",
                         "value": 'bar',
                         brief: '-1',
                         guard: true,
+                    },
+                    {
+                        "action": "CREATE_META",
+                        "title": "foo",
+                        "value": '123',
                     },
                 ],
                 tally: {
@@ -273,15 +273,15 @@
             output: {
                 operations: [
                     {
-                        "action": "CREATE_META",
-                        "title": "foo",
-                        "value": '123',
-                    },
-                    {
                         "action": "CREATE_FILE",
                         "title": "foo",
                         "value": 'bar',
                         brief: '+3',
+                    },
+                    {
+                        "action": "CREATE_META",
+                        "title": "foo",
+                        "value": '123',
                     },
                 ],
                 tally: {
@@ -304,13 +304,13 @@
             output: {
                 operations: [
                     {
-                        "action": "DELETE_META",
-                        "title": "foo",
-                    },
-                    {
                         "action": "DELETE_FILE",
                         "title": "foo",
                         brief: '-3',
+                    },
+                    {
+                        "action": "DELETE_META",
+                        "title": "foo",
                     },
                 ],
                 tally: {
@@ -327,20 +327,20 @@
                     'foo': {sha1: '123'}
                 },
                 localHub: {
-                    'foo': {sha1: '1234', content: 'barx'},
+                    'foo': {sha1: '124', content: 'barx'},
                 },
             },
             output: {
                 operations: [
                     {
-                        "action": "DELETE_META",
-                        "title": "foo",
-                    },
-                    {
                         "action": "DELETE_FILE",
                         "title": "foo",
                         brief: '-4',
                         guard: true,
+                    },
+                    {
+                        "action": "DELETE_META",
+                        "title": "foo",
                     },
                 ],
                 tally: {
@@ -408,6 +408,5 @@
 
     await focus(triageHubs, TESTS, {
         sendInputAsArguments: true,
-        fixN: true,
     });
 </script>
