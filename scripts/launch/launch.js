@@ -1,12 +1,11 @@
 import {spawn} from 'node:child_process';
 import {join} from 'node:path';
 
-const LAUNCH_DOWNLOAD = join(import.meta.dirname, '../../../homm-oe/scripts/download/download.js');
-const LAUNCH_UPLOAD = join(import.meta.dirname, '../../../homm-oe/scripts/upload/upload.js');
+const REMOTE_SCRIPT = join(import.meta.dirname, '../../../homm-oe/scripts/sync/sync.js');
 
 function launch() {
-    const path = process.argv[2] === 'download' ? LAUNCH_DOWNLOAD : LAUNCH_UPLOAD;
-    const child = spawn('node', [path], {stdio: 'inherit'});
+    const uploadParameter = process.argv[2] === 'upload' ? 'upload' : null;
+    const child = spawn('node', [REMOTE_SCRIPT, uploadParameter], {stdio: 'inherit'});
     child.on('close', (code) => process.exit(code));
 }
 

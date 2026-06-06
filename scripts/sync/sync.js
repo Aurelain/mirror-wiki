@@ -24,10 +24,11 @@ const BEGINNING_OF_TIME = '2000-01-01T00:00:00Z';
 /**
  *
  */
-async function download() {
+async function sync() {
     // Settings:
     const settings = readSettings(process.argv[2]);
     applySettings(settings);
+    const isUpload = process.argv[3] === 'upload';
 
     // Meta:
     const dirPath = settings.DIR_PATH;
@@ -58,8 +59,10 @@ async function download() {
     await healTriage(triageResult);
 
     // Danger:
-    await applyTriage(triageResult.operations, metaHub, dirPath);
-    console.log('ok');
+    await applyTriage(triageResult.operations, metaHub, dirPath, isUpload);
+
+    // Output:
+    console.log('Done.');
 }
 
 // =====================================================================================================================
@@ -178,4 +181,4 @@ function getGuardedMessage(list) {
 // =====================================================================================================================
 //  R U N
 // =====================================================================================================================
-await download();
+await sync();

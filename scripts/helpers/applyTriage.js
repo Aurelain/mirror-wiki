@@ -1,10 +1,19 @@
-import {CREATE_FILE, CREATE_META, DELETE_FILE, DELETE_META, UPDATE_FILE, UPDATE_META} from './ACTIONS.js';
+import {
+    CREATE_FILE,
+    CREATE_META,
+    CREATE_PAGE,
+    DELETE_FILE,
+    DELETE_META,
+    UPDATE_FILE,
+    UPDATE_META,
+    UPDATE_PAGE,
+} from './ACTIONS.js';
 import fs from 'node:fs';
 import writeMeta from './writeMeta.js';
 import assume from '../utils/assume.js';
 import convertTitleToPath from './convertTitleToPath.js';
 import writeFile from '../utils/writeFile.js';
-import downloadUrl from '../download/downloadUrl.js';
+import downloadUrl from '../sync/downloadUrl.js';
 
 // =====================================================================================================================
 //  P U B L I C
@@ -41,8 +50,12 @@ async function applyTriage(operations, metaHub, dirPath) {
                     }
                 }
                 break;
+            case CREATE_PAGE: // fall
+            case UPDATE_PAGE:
+                console.log('TODO', action);
+                break;
             default:
-                // We're skipping CREATE_PAGE and UPDATE_PAGE at this stage
+                assume(false, action, 'Unexpected action!');
                 break;
         }
     }
