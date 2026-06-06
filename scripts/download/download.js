@@ -3,10 +3,6 @@ import {join} from 'node:path';
 import {applySettings} from '../helpers/api.js';
 import readSettings from '../helpers/readSettings.js';
 import getChangesSince from './getChangesSince.js';
-import checkPojo from '../utils/checkPojo.js';
-import assume from '../utils/assume.js';
-import checkString from '../utils/checkString.js';
-import checkArray from '../utils/checkArray.js';
 import computeSha1 from '../utils/computeSha1.js';
 import convertPathToTitle from '../helpers/convertPathToTitle.js';
 import readMeta from '../helpers/readMeta.js';
@@ -14,12 +10,13 @@ import triageHubs from '../helpers/triageHubs.js';
 import confirm from '../utils/confirm.js';
 import applyTriage from '../helpers/applyTriage.js';
 import healTriage from './healTriage.js';
+import sortJson from '../utils/sortJson.js';
 
 // =====================================================================================================================
 //  D E C L A R A T I O N S
 // =====================================================================================================================
-// const BEGINNING_OF_TIME = '2000-01-01T00:00:00Z';
-const BEGINNING_OF_TIME = '2026-06-03T00:00:00.123Z';
+const BEGINNING_OF_TIME = '2000-01-01T00:00:00Z';
+// const BEGINNING_OF_TIME = '2026-05-20T00:00:00Z';
 
 // =====================================================================================================================
 //  P U B L I C
@@ -35,8 +32,8 @@ async function download() {
     // Meta:
     const dirPath = settings.DIR_PATH;
     const meta = readMeta(dirPath);
-    // const lastUpdate = meta.lastUpdate || BEGINNING_OF_TIME;
-    const lastUpdate = BEGINNING_OF_TIME;
+    const lastUpdate = meta.lastUpdate || BEGINNING_OF_TIME;
+    // const lastUpdate = BEGINNING_OF_TIME;
     const isAllFresh = lastUpdate === BEGINNING_OF_TIME;
     const metaHub = buildMetaHub(meta);
 
@@ -87,23 +84,16 @@ function buildMetaHub(meta) {
 function buildChangesHub(pages) {
     const hub = {};
     for (const page of pages) {
-        assume(checkPojo(page), page, 'page must be pojo!');
         const {title, revisions, ns, imageinfo} = page;
-        assume(checkString(title), page, 'title must be a filled string!');
-        assume(checkArray(revisions), page, 'revisions must be filled array!');
-        assume(revisions.length === 1, page, 'revisions must have only one item!');
-        const content = revisions[0]?.['slots']?.main?.content;
-        assume(typeof content === 'string', page, 'content must be a string!');
+        const content = revisions[0]['slots'].main.content;
         hub[title] = {
             content,
             sha1: computeSha1(content),
         };
-        if (ns === 6) {
+        if (ns === 6 && imageinfo) {
             // File:
-            const content = imageinfo?.[0]?.url;
-            assume(checkString(content), page, 'url must be filled string!');
-            const sha1 = imageinfo?.[0]?.sha1;
-            assume(checkString(sha1), page, 'sha1 must be filled string!');
+            const content = imageinfo[0].url;
+            const sha1 = imageinfo[0].sha1;
             hub[title + '.url'] = {
                 content,
                 sha1,
@@ -172,9 +162,15 @@ function getGuardedMessage(list) {
         return '';
     }
     const lines = ['The following operations need confirmation:'];
+    const unique = {};
     for (const item of guardedItems) {
         const {title, action} = item;
-        lines.push(`    ${title} 🡢 ${action}`);
+        unique[title] = unique[title] || [];
+        unique[title].push(action);
+    }
+    const sorted = sortJson(unique);
+    for (const key in sorted) {
+        lines.push(`    ${key} 🡢 ${unique[key].join(', ')}`);
     }
     return lines.join('\n');
 }

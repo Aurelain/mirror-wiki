@@ -11,8 +11,8 @@ import checkString from '../utils/checkString.js';
  */
 async function healTriage({operations}) {
     for (const operation of operations) {
-        const {content, title} = operation;
-        if (content === undefined) {
+        const {value, title} = operation;
+        if (value === undefined) {
             console.log(`Healing ${title}...`);
             const page = await getPage(title);
             if (title.endsWith('.url')) {

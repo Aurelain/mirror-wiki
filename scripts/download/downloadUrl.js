@@ -7,6 +7,7 @@ import computeSha1 from '../utils/computeSha1.js';
  *
  */
 async function downloadUrl(destinationPath, url) {
+    console.log(`Downloading ${url}...`);
     const response = await fetch(url, {
         method: 'GET',
         headers: getHeaders(),
