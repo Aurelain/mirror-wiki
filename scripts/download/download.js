@@ -169,9 +169,8 @@ function getGuardedMessage(list) {
     }
     const lines = ['The following operations need confirmation:'];
     for (const item of guardedItems) {
-        const {title, action, brief} = item;
-        const briefText = brief ? ` (${brief})` : '';
-        lines.push(`    ${title} 🡢 ${action}${briefText}`);
+        const {title, action} = item;
+        lines.push(`    ${title} 🡢 ${action}`);
     }
     return lines.join('\n');
 }

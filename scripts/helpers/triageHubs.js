@@ -211,7 +211,6 @@ function handleLocalChangesNotCommited(title, item) {
             title,
             action: UPDATE_PAGE,
             value: item.local.content,
-            brief: summarizeChanges(item.cloud.content, item.local.content),
         },
     ];
 }
@@ -238,7 +237,6 @@ function handleRemoteChanges(title, item) {
             title,
             action: UPDATE_FILE,
             value: item.cloud.content,
-            brief: summarizeChanges(item.local.content, item.cloud.content),
         },
         {
             title,
@@ -258,7 +256,6 @@ function handleRemoteChangesWhileWorking(title, item) {
             action: UPDATE_FILE,
             value: item.cloud.content,
             guard: true,
-            brief: summarizeChanges(item.local.content, item.cloud.content),
         },
         {
             title,
@@ -277,7 +274,6 @@ function handleAccidentalDeletion(title, item) {
             title,
             action: CREATE_FILE,
             value: item.cloud.content,
-            brief: summarizeChanges('', item.cloud.content),
         },
     ];
 }
@@ -291,7 +287,6 @@ function handleAccidentalDeletionAndCloudChanged(title, item) {
             title,
             action: CREATE_FILE,
             value: item.cloud.content,
-            brief: summarizeChanges('', item.cloud.content),
         },
         {
             title,
@@ -324,7 +319,6 @@ function handlePrematureManualWrongCreation(title, item) {
             action: UPDATE_FILE,
             value: item.cloud.content,
             guard: true,
-            brief: summarizeChanges(item.local.content, item.cloud.content),
         },
         {
             title,
@@ -343,7 +337,6 @@ function handleNewPage(title, item) {
             title,
             action: CREATE_FILE,
             value: item.cloud.content,
-            brief: summarizeChanges('', item.cloud.content),
         },
         {
             title,
@@ -361,7 +354,6 @@ function handlePageDeleted(title, item) {
         {
             title,
             action: DELETE_FILE,
-            brief: summarizeChanges(item.local.content, ''),
         },
         {
             title,
@@ -379,7 +371,6 @@ function handlePageDeletedWhileWorking(title, item) {
             title,
             action: DELETE_FILE,
             guard: true,
-            brief: summarizeChanges(item.local.content, ''),
         },
         {
             title,
@@ -409,7 +400,6 @@ function handleUncommitedNewFile(title, item) {
             title,
             action: CREATE_PAGE,
             value: item.local.content,
-            brief: summarizeChanges('', item.local.content),
         },
     ];
 }
