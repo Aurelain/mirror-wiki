@@ -13,12 +13,13 @@ import readMeta from '../helpers/readMeta.js';
 import triageHubs from '../helpers/triageHubs.js';
 import confirm from '../utils/confirm.js';
 import applyTriage from '../helpers/applyTriage.js';
+import healTriage from './healTriage.js';
 
 // =====================================================================================================================
 //  D E C L A R A T I O N S
 // =====================================================================================================================
 // const BEGINNING_OF_TIME = '2000-01-01T00:00:00Z';
-const BEGINNING_OF_TIME = '2026-06-01T00:00:00.123Z';
+const BEGINNING_OF_TIME = '2026-06-03T00:00:00.123Z';
 
 // =====================================================================================================================
 //  P U B L I C
@@ -55,6 +56,9 @@ async function download() {
     announceTally(triageResult);
     const importantMessage = getGuardedMessage(triageResult.operations);
     (await confirm(importantMessage)) || process.exit(0);
+
+    // Fix triage to account for missing contents:
+    await healTriage(triageResult);
 
     // Danger:
     await applyTriage(triageResult.operations, metaHub, dirPath);
