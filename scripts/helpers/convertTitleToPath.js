@@ -46,7 +46,7 @@ function convertTitleToPath(title) {
     filePath = filePath.replaceAll(' ', '_');
     filePath = filePath.replaceAll(':', '#');
     filePath = adaptExtension(filePath);
-    return namespace + '/' + filePath;
+    return namespace.replace(' ', '_') + '/' + filePath;
 }
 
 // =====================================================================================================================
