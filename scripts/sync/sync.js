@@ -17,9 +17,7 @@ import writeMeta from '../helpers/writeMeta.js';
 // =====================================================================================================================
 //  D E C L A R A T I O N S
 // =====================================================================================================================
-const BEGINNING_OF_TIME = '2000-01-01T00:00:00Z';
 const UPLOAD = new Set([CREATE_PAGE, UPDATE_PAGE]);
-// const BEGINNING_OF_TIME = '2026-05-20T00:00:00Z';
 
 // =====================================================================================================================
 //  P U B L I C
@@ -35,15 +33,13 @@ async function sync() {
     // Meta:
     const dirPath = settings.DIR_PATH;
     const meta = readMeta(dirPath);
-    const lastUpdate = meta.lastUpdate || BEGINNING_OF_TIME;
-    // const lastUpdate = BEGINNING_OF_TIME;
-    const isAllFresh = lastUpdate === BEGINNING_OF_TIME;
+    const lastUpdate = meta.lastUpdate;
     const metaHub = buildMetaHub(meta);
 
     // Cloud:
     const pages = await getChangesSince(lastUpdate);
     const changesHub = buildChangesHub(pages);
-    const cloudHub = isAllFresh ? changesHub : {...metaHub, ...changesHub};
+    const cloudHub = lastUpdate ? {...metaHub, ...changesHub} : changesHub;
 
     // Local:
     const localHub = buildLocalHub(dirPath, dirPath.length + 1);

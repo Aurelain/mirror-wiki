@@ -15,7 +15,6 @@ let cookies;
 async function ask(params) {
     assume(settings, 'Please call applySettings() prior to asking!');
     const method = detectMethod(params);
-    announceAction(method, params);
 
     // Headers:
     const options = {
@@ -33,6 +32,7 @@ async function ask(params) {
     }
 
     // Actual request:
+    announceAction(method, params, url);
     const response = await fetch(url, options);
     // console.log('url:', url);
 
@@ -71,13 +71,10 @@ function detectMethod(params) {
 /**
  *
  */
-function announceAction(method, params) {
+function announceAction(method, params, url) {
     const parts = [method + ':', params.action];
     if (params.action === 'query') {
-        params.meta && parts.push(params.meta);
-        params.type && parts.push(params.type);
-        params.prop && parts.push(params.prop);
-        params.generator && parts.push(params.generator);
+        parts.push(url.search);
     }
     console.log(parts.join(' '));
 }

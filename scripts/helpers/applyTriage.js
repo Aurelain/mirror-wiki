@@ -9,7 +9,6 @@ import {
     UPDATE_PAGE,
 } from './ACTIONS.js';
 import fs from 'node:fs';
-import writeMeta from './writeMeta.js';
 import assume from '../utils/assume.js';
 import convertTitleToPath from './convertTitleToPath.js';
 import writeFile from '../utils/writeFile.js';
