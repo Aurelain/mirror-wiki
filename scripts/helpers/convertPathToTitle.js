@@ -22,6 +22,7 @@ function convertPathToTitle(filePath) {
     title = title.replaceAll('~', '/');
     title = title.replaceAll('_', ' ');
     title = title.replaceAll('#', ':');
+    title = title.replace(/\.lua$/, '');
     title = title.startsWith('File:') && !title.endsWith('.wiki') ? title + '.url' : title;
     title = title.replace(/\.wiki$/, '');
     return title;

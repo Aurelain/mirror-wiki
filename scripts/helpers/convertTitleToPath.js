@@ -46,6 +46,7 @@ function convertTitleToPath(title) {
     filePath = filePath.replaceAll(' ', '_');
     filePath = filePath.replaceAll(':', '#');
     filePath = adaptExtension(filePath);
+    filePath = adaptModuleExtension(filePath, namespace);
     return namespace.replace(' ', '_') + '/' + filePath;
 }
 
@@ -74,6 +75,19 @@ function adaptExtension(title) {
         return title.replace(/\.url$/, '');
     }
     return ALLOWED_EXTENSIONS.has(extension) ? title : title + '.wiki';
+}
+
+/**
+ *
+ */
+function adaptModuleExtension(filePath, namespace) {
+    if (namespace !== 'Module') {
+        return filePath;
+    }
+    if (filePath.endsWith('~doc.wiki') || filePath.endsWith('.css')) {
+        return filePath;
+    }
+    return filePath.replace('.wiki', '.lua');
 }
 
 // =====================================================================================================================
