@@ -7,7 +7,7 @@ import assume from '../utils/assume.js';
 /**
  *
  */
-async function uploadPage(title, content, csrfToken) {
+async function uploadPage(title, content, csrfToken, comment = '') {
     console.log(`Uploading content for: ${title}...`);
     const editResponse = await ask({
         method: 'POST',
@@ -15,7 +15,8 @@ async function uploadPage(title, content, csrfToken) {
         title,
         text: content,
         token: csrfToken,
-        bot: true, // Flags the edit as a bot to avoid clogging recent changes
+        bot: '1', // does nothing if the Bot doesn't appear in `Special:ListUsers/bot`
+        summary: comment,
     });
     assume(editResponse?.edit?.result === 'Success', editResponse, 'Edit failed!');
 }

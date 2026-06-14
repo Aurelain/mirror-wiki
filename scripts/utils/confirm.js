@@ -11,12 +11,15 @@ async function confirm(message) {
     if (!message) {
         return true;
     }
-    message = message.trim() + '\nDo you want to continue? [Y/n]: ';
+    message = message.trim() + '\nDo you want to continue? [message or "n"]';
     const rl = readline.createInterface({input, output});
     const answer = await rl.question(message);
     const trimmedAnswer = answer.trim().toLowerCase();
     rl.close();
-    return trimmedAnswer === '' || trimmedAnswer.startsWith('y');
+    if (trimmedAnswer === 'n') {
+        return null;
+    }
+    return trimmedAnswer;
 }
 
 // =====================================================================================================================

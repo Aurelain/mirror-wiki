@@ -28,13 +28,13 @@ let csrfToken;
 /**
  *
  */
-async function applyTriage(operations, metaHub, dirPath, auth) {
+async function applyTriage(operations, metaHub, dirPath, auth, comment) {
     const {length} = operations;
     for (let i = 0; i < length; i++) {
         if (!auth) {
             await applyDownload(operations[i], metaHub, dirPath, operations[i]);
         } else {
-            await applyUpload(operations[i], auth, metaHub);
+            await applyUpload(operations[i], auth, metaHub, comment);
         }
     }
 }
@@ -96,10 +96,10 @@ function mutateNextOperation(operation, localFileSha1) {
 /**
  *
  */
-async function applyUpload({title, action, value}, auth, metaHub) {
+async function applyUpload({title, action, value}, auth, metaHub, comment) {
     if (action === CREATE_PAGE || action === UPDATE_PAGE) {
         csrfToken = csrfToken || (await getCsrfToken(auth.username, auth.password));
-        await uploadPage(title, value, csrfToken);
+        await uploadPage(title, value, csrfToken, comment);
         metaHub[title] = metaHub[title] || {};
         metaHub[title].sha1 = computeSha1(value);
     }

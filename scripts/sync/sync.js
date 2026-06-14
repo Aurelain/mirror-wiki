@@ -57,9 +57,9 @@ async function sync() {
         await confirmOperations(triageResult.operations);
         await applyTriage(triageResult.operations, metaHub, dirPath);
         if (process.argv[3] === 'upload') {
-            await confirmOperations(triageResult.operations, true);
+            const comment = await confirmOperations(triageResult.operations, true);
             const auth = {username: settings.USERNAME, password: settings.PASSWORD};
-            await applyTriage(triageResult.operations, metaHub, dirPath, auth);
+            await applyTriage(triageResult.operations, metaHub, dirPath, auth, comment);
         }
         writeMeta(dirPath, simplifyHub(metaHub));
     }
@@ -162,6 +162,11 @@ function announceTally({tally}) {
  *
  */
 async function confirmOperations(operations, isUpload) {
+    if (isUpload && operations.length === 1 && operations[0].title.includes('Module:Sandbox')) {
+        // A fast way to upload tests in the sandbox
+        return;
+    }
+
     const unique = {};
     for (const item of operations) {
         const {title, action} = item;
@@ -181,9 +186,11 @@ async function confirmOperations(operations, isUpload) {
         lines.push(`    ${key} 🡢 ${unique[key].join(', ')}`);
     }
     const message = lines.join('\n');
-    if (!(await confirm(message))) {
+    const comment = await confirm(message);
+    if (comment === null) {
         process.exit(0);
     }
+    return comment;
 }
 
 /**
