@@ -79,11 +79,17 @@ function triageHubs(cloudHub, metaHub, localHub) {
     for (const title in hub) {
         const {code} = hub[title];
         const description = DESCRIPTIONS[code];
-        tally[description] = tally[description] || 0;
-        tally[description]++;
         const handler = HANDLERS[code];
         if (handler) {
-            operations.push(...handler(title, hub[title]));
+            const result = handler(title, hub[title]);
+            if (result?.length) {
+                operations.push(...result);
+                tally[description] = tally[description] || 0;
+                tally[description]++;
+            }
+        } else {
+            tally[description] = tally[description] || 0;
+            tally[description]++;
         }
     }
     return {tally, operations};
@@ -206,6 +212,9 @@ function summarizeChanges(old = '', fresh = '') {
  * Local changes not yet commited (111AAB)
  */
 function handleLocalChangesNotCommited(title, item) {
+    if (title.endsWith('.url')) {
+        return []; // TODO: fix this
+    }
     return [
         {
             title,

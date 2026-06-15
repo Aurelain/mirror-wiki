@@ -14,9 +14,9 @@ async function confirm(message) {
     message = message.trim() + '\nDo you want to continue? [message or "n"]';
     const rl = readline.createInterface({input, output});
     const answer = await rl.question(message);
-    const trimmedAnswer = answer.trim().toLowerCase();
+    const trimmedAnswer = answer.trim();
     rl.close();
-    if (trimmedAnswer === 'n') {
+    if (trimmedAnswer.toLowerCase() === 'n') {
         return null;
     }
     return trimmedAnswer;

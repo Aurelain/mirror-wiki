@@ -34,6 +34,7 @@ async function sync() {
     const dirPath = settings.DIR_PATH;
     const meta = readMeta(dirPath);
     const lastUpdate = meta.lastUpdate;
+    // const lastUpdate = new Date('2026-06-10').toISOString();
     const metaHub = buildMetaHub(meta);
 
     // Cloud:
@@ -91,6 +92,9 @@ function buildChangesHub(pages) {
     const hub = {};
     for (const page of pages) {
         const {title, revisions, ns, imageinfo} = page;
+        if (title.endsWith('.url')) {
+            continue; // mistakes were made :)
+        }
         const content = revisions[0]['slots'].main.content;
         hub[title] = {
             content,
