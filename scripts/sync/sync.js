@@ -166,7 +166,7 @@ function announceTally({tally}) {
  *
  */
 async function confirmOperations(operations, isUpload) {
-    if (isUpload && operations.length === 1 && operations[0].title.includes('Module:Sandbox')) {
+    if (isUpload && operations.length === 1 && operations[0].title.includes('Sandbox')) {
         // A fast way to upload tests in the sandbox
         return;
     }
