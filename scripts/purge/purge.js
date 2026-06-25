@@ -25,9 +25,10 @@ async function purge() {
 
     // Apply:
     const {length} = list;
+    console.log(`Preparing to purge ${length} titles...`);
     for (let i = 0; i < length; i += STEP) {
         const chunk = list.slice(i, i + STEP);
-        await purgePages(chunk);
+        await purgePages(chunk, i, i + STEP, length);
     }
     console.log('Done.');
 }
@@ -38,9 +39,10 @@ async function purge() {
 /**
  *
  */
-async function purgePages(titles) {
+async function purgePages(titles, begin, end, total) {
     const titlesString = titles.join('|');
     console.log('Purging:', titlesString);
+    console.log(`(${begin}-${end} of ${total})`);
     const purgeResponse = await ask({
         method: 'POST',
         action: 'purge',
